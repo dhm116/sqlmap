@@ -283,10 +283,7 @@ class Entries:
                                         query = rootQuery.blind.query % (agent.preprocessField(tbl, column),
                                                                         tbl.upper() if not conf.db else ("%s.%s" % (conf.db.upper(), tbl.upper())),
                                                                         index)
-                                    elif Backend.isDbms(DBMS.SQLITE):
-                                        query = rootQuery.blind.query % (agent.preprocessField(tbl, column), tbl, index)
-
-                                    elif Backend.isDbms(DBMS.FIREBIRD):
+                                    elif Backend.getIdentifiedDbms() in (DBMS.FIREBIRD, DBMS.SQLITE):
                                         query = rootQuery.blind.query % (index, agent.preprocessField(tbl, column), tbl)
 
                                     value = NULL if column in emptyColumns else inject.getValue(query, union=False, error=False, dump=True)
