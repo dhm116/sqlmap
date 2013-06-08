@@ -540,6 +540,7 @@ class Databases:
 
                 if Backend.isDbms(DBMS.SQLITE):
                     parseSqliteTableSchema(unArrayizeValue(values))
+                    # pass
                 elif not isNoneValue(values):
                     table = {}
                     columns = {}
@@ -610,10 +611,8 @@ class Databases:
                     query += condQuery
 
                 elif Backend.isDbms(DBMS.SQLITE):
-                    query = rootQuery.blind.query % tbl
-                    value = unArrayizeValue(inject.getValue(query, union=False, error=False))
-                    parseSqliteTableSchema(value)
-                    return kb.data.cachedColumns
+                    query = rootQuery.blind.count % (tbl)
+                    query += condQuery
 
                 count = inject.getValue(query, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
 
@@ -652,12 +651,18 @@ class Databases:
                         query = rootQuery.blind.query.replace("'%s'", "'%s'" % unsafeSQLIdentificatorNaming(tbl).split(".")[-1]).replace("%s", conf.db).replace("%d", str(index))
                         query += condQuery.replace("[DB]", conf.db)
                         field = condition.replace("[DB]", conf.db)
-                    elif Backend.isDbms(DBMS.FIREBIRD):
+                    elif Backend.getIdentifiedDbms() in (DBMS.SQLITE,):
+                        query = rootQuery.blind.query % (index, tbl)
+                        query += condQuery
+                        field = None
+                    elif Backend.getIdentifiedDbms() in (DBMS.FIREBIRD,):
                         query = rootQuery.blind.query % (tbl)
                         query += condQuery
                         field = None
 
-                    query = agent.limitQuery(index, query, field, field)
+                    if not Backend.getIdentifiedDbms() in (DBMS.SQLITE,):
+                        query = agent.limitQuery(index, query, field, field)
+
                     column = unArrayizeValue(inject.getValue(query, union=False, error=False))
 
                     if not isNoneValue(column):
@@ -669,11 +674,10 @@ class Databases:
                             elif Backend.isDbms(DBMS.MSSQL):
                                 query = rootQuery.blind.query2 % (conf.db, conf.db, conf.db, conf.db, column, conf.db,
                                                                 conf.db, conf.db, unsafeSQLIdentificatorNaming(tbl).split(".")[-1])
-                            elif Backend.isDbms(DBMS.FIREBIRD):
+                            elif Backend.getIdentifiedDbms() in (DBMS.FIREBIRD, DBMS.SQLITE):
                                 query = rootQuery.blind.query2 % (tbl, column)
 
                             colType = unArrayizeValue(inject.getValue(query, union=False, error=False))
-
                             if Backend.isDbms(DBMS.FIREBIRD):
                                 colType = FIREBIRD_TYPES.get(colType, colType)
 

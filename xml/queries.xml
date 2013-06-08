@@ -327,8 +327,8 @@
             <blind query="SELECT LIMIT %d 1 TABLE_NAME FROM INFORMATION_SCHEMA.SYSTEM_TABLES WHERE TABLE_TYPE='TABLE'" count="SELECT COUNT(TABLE_NAME) FROM INFORMATION_SCHEMA.SYSTEM_TABLES WHERE TABLE_TYPE='TABLE'"/>
         </tables>
         <columns>
-            <inband query="SELECT MIN(*) FROM SYSTEM_SCHEMAS.SYSTEM_COLUMNS WHERE TABLE_NAME='%s'"/>
-            <blind query="SELECT LIMIT 1 * FROM SYSTEM_SCHEMAS.SYSTEM_COLUMNS WHERE TABLE_NAME='%s'" condition=""/>
+            <inband query="SELECT column_name FROM SYSTEM_SCHEMAS.SYSTEM_COLUMNS WHERE table_name='%s'" condition="column_name"/>
+            <blind query="SELECT LIMIT %d 1 column_name FROM SYSTEM_SCHEMAS.SYSTEM_COLUMNS WHERE table_name='%s'" query2="SELECT type_name FROM SYSTEM_SCHEMAS.SYSTEM_COLUMNS WHERE table_name='%s' AND column_name='%s'" count="SELECT COUNT(column_name) FROM SYSTEM_SCHEMAS.SYSTEM_COLUMNS WHERE table_name='%s'" condition="column_name"/>
         </columns>
         <dump_table>
             <inband query="SELECT %s FROM %s"/>
