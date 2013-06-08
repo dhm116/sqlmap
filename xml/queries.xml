@@ -311,7 +311,7 @@
         <case query="SELECT (CASE WHEN (%s) THEN 1 ELSE 0 END)"/>
         <hex query="HEX(%s)"/>
         <inference query="SUBSTR((%s),%d,1)>'%c'"/>
-        <banner query="SELECT SQLITE_VERSION()"/>
+        <banner query="SELECT DATABASE_VERSION()"/>
         <current_user/>
         <current_db/>
         <hostname/>
@@ -323,21 +323,21 @@
         <roles/>
         <dbs/>
         <tables>
-            <inband query="SELECT tbl_name FROM sqlite_master WHERE type='table'"/>
-            <blind query="SELECT tbl_name FROM sqlite_master WHERE type='table' LIMIT %d,1" count="SELECT COUNT(tbl_name) FROM sqlite_master WHERE type='table'"/>
+            <inband query="SELECT TABLE_NAME FROM INFORMATION_SCHEMA.SYSTEM_TABLES WHERE TABLE_TYPE='TABLE'"/>
+            <blind query="SELECT LIMIT %d 1 TABLE_NAME FROM INFORMATION_SCHEMA.SYSTEM_TABLES WHERE TABLE_TYPE='TABLE'" count="SELECT COUNT(TABLE_NAME) FROM INFORMATION_SCHEMA.SYSTEM_TABLES WHERE TABLE_TYPE='TABLE'"/>
         </tables>
         <columns>
-            <inband query="SELECT MIN(sql) FROM sqlite_master WHERE tbl_name='%s'"/>
-            <blind query="SELECT sql FROM sqlite_master WHERE tbl_name='%s' LIMIT 1" condition=""/>
+            <inband query="SELECT MIN(*) FROM SYSTEM_SCHEMAS.SYSTEM_COLUMNS WHERE TABLE_NAME='%s'"/>
+            <blind query="SELECT LIMIT 1 * FROM SYSTEM_SCHEMAS.SYSTEM_COLUMNS WHERE TABLE_NAME='%s'" condition=""/>
         </columns>
         <dump_table>
             <inband query="SELECT %s FROM %s"/>
-            <blind query="SELECT %s FROM %s LIMIT %d,1" count="SELECT COUNT(*) FROM %s"/>
+            <blind query="SELECT LIMIT %d 1 %s FROM %s" count="SELECT COUNT(*) FROM %s"/>
         </dump_table>
         <search_db/>
         <search_table>
-            <inband query="SELECT tbl_name FROM sqlite_master WHERE type='table' AND %s" condition="tbl_name" condition2=""/>
-            <blind query="" query2="SELECT tbl_name FROM sqlite_master WHERE type='table'" count="" count2="SELECT COUNT(tbl_name) FROM sqlite_master WHERE type='table'" condition="tbl_name" condition2=""/>
+            <inband query="SELECT TABLE_NAME FROM INFORMATION_SCHEMA.SYSTEM_TABLES WHERE TABLE_TYPE='TABLE' AND %s" condition="TABLE_NAME" condition2=""/>
+            <blind query="" query2="SELECT TABLE_NAME FROM INFORMATION_SCHEMA.SYSTEM_TABLES WHERE TABLE_TYPE='TABLE'" count="" count2="SELECT COUNT(TABLE_NAME) FROM INFORMATION_SCHEMA.SYSTEM_TABLES WHERE TABLE_TYPE='TABLE'" condition="TABLE_NAME" condition2=""/>
         </search_table>
         <search_column/>
     </dbms>
@@ -474,7 +474,7 @@
         <tables>
             <inband query="SELECT tablename FROM domain.tables WHERE schemaname=%s AND type='TABLE'"/>
             <blind/>
-        </tables> 
+        </tables>
         <dbs>
             <inband query="SELECT DISTINCT(schemaname) FROM domain.tables"/>
             <blind/>
@@ -588,7 +588,7 @@
             <inband query="SELECT grantee FROM sysibm.sysdbauth WHERE grantee!='SYSTEM' AND grantee!='PUBLIC'"/>
             <blind query="SELECT grantee FROM (SELECT ROW_NUMBER() OVER () AS LIMIT,grantee FROM sysibm.sysdbauth WHERE grantee!='SYSTEM' AND grantee!='PUBLIC') AS foobar WHERE LIMIT=%d" count="SELECT COUNT(DISTINCT(grantee)) FROM sysibm.sysdbauth WHERE grantee!='SYSTEM' AND grantee!='PUBLIC'"/>
         </users>
-        <!-- NOTE: On DB2 it is not possible to list password hashes, since they are handled by the OS -->        
+        <!-- NOTE: On DB2 it is not possible to list password hashes, since they are handled by the OS -->
         <passwords/>
         <privileges>
             <inband query="SELECT grantee,RTRIM(tabschema)||'.'||tabname||CHR(44)||controlauth||alterauth||deleteauth||indexauth||insertauth||refauth||selectauth||updateauth FROM syscat.tabauth" condition="grantee"/>
